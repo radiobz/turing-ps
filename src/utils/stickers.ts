@@ -102,4 +102,60 @@ export const STICKERS: StickerItem[] = [
       '<rect x="20" y="40" width="60" height="46" rx="6" fill="#ff85c0" stroke="#d45a8f" stroke-width="2"/><path d="M50 40 L50 86 M20 58 L80 58" stroke="#d45a8f" stroke-width="3"/><rect x="20" y="52" width="60" height="8" fill="#eb2f96"/><path d="M50 40 C50 28 28 26 28 34 C28 42 50 40 50 40 Z" fill="#f5222d"/><path d="M50 40 C50 28 72 26 72 34 C72 42 50 40 50 40 Z" fill="#f5222d"/>'
     ),
   },
+  {
+    key: 'sun',
+    name: '太阳',
+    svg: S(
+      '<circle cx="50" cy="50" r="18" fill="#ffc53d" stroke="#d48806" stroke-width="2"/><g stroke="#faad14" stroke-width="5" stroke-linecap="round"><path d="M50 12 V24 M50 76 V88 M12 50 H24 M76 50 H88 M23 23 L31 31 M69 69 L77 77 M77 23 L69 31 M31 69 L23 77"/></g>'
+    ),
+  },
+  {
+    key: 'balloon',
+    name: '气球',
+    svg: S(
+      '<ellipse cx="44" cy="42" rx="26" ry="30" fill="#ff4d4f"/><ellipse cx="44" cy="52" rx="16" ry="10" fill="#ff7875" opacity="0.5"/><path d="M44 72 L42 92 L50 84 Z" fill="#a8071a"/><path d="M36 96 Q44 88 52 96" stroke="#a8071a" stroke-width="2" fill="none"/><path d="M46 90 Q54 96 62 90" stroke="#a8071a" stroke-width="2" fill="none"/>'
+    ),
+  },
+  {
+    key: 'bell',
+    name: '铃铛',
+    svg: S(
+      '<path d="M30 30 Q30 12 50 12 Q70 12 70 30 L72 58 L82 70 L18 70 L28 58 Z" fill="#fadb14" stroke="#d4b106" stroke-width="2"/><circle cx="50" cy="78" r="10" fill="#fa8c16"/><rect x="18" y="70" width="64" height="6" rx="3" fill="#d4b106"/>'
+    ),
+  },
+  {
+    key: 'check',
+    name: '对勾',
+    svg: S(
+      '<circle cx="50" cy="50" r="44" fill="#52c41a" opacity="0.15"/><path d="M26 52 L42 66 L76 32" stroke="#389e0d" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none"/>'
+    ),
+  },
+  {
+    key: 'question',
+    name: '问号',
+    svg: S(
+      '<circle cx="50" cy="50" r="44" fill="#2d8cf0" opacity="0.12"/><path d="M38 38 Q38 24 50 24 Q62 24 62 36 Q62 46 50 50 L50 62" stroke="#2d8cf0" stroke-width="7" fill="none" stroke-linecap="round"/><circle cx="50" cy="74" r="5" fill="#2d8cf0"/>'
+    ),
+  },
+  {
+    key: 'exclaim',
+    name: '感叹号',
+    svg: S(
+      '<circle cx="50" cy="50" r="44" fill="#f5222d" opacity="0.12"/><rect x="45" y="24" width="10" height="34" rx="5" fill="#f5222d"/><circle cx="50" cy="72" r="6" fill="#f5222d"/>'
+    ),
+  },
+  {
+    key: 'coffee',
+    name: '咖啡',
+    svg: S(
+      '<path d="M16 44 H58 V64 Q58 78 44 78 H30 Q16 78 16 64 Z" fill="#8d6e63" stroke="#5d4037" stroke-width="2"/><path d="M58 48 H66 Q78 48 78 58 Q78 68 66 68 H58" fill="none" stroke="#5d4037" stroke-width="5"/><path d="M22 26 L34 18 M28 30 L42 20" stroke="#bf360c" stroke-width="3" stroke-linecap="round"/>'
+    ),
+  },
+  {
+    key: 'camera',
+    name: '相机',
+    svg: S(
+      '<rect x="12" y="30" width="76" height="52" rx="10" fill="#595959" stroke="#262626" stroke-width="2"/><rect x="32" y="22" width="36" height="12" rx="6" fill="#595959" stroke="#262626" stroke-width="2"/><circle cx="50" cy="56" r="16" fill="#fff" stroke="#262626" stroke-width="3"/><circle cx="50" cy="56" r="8" fill="#262626"/><circle cx="74" cy="38" r="3" fill="#fff"/>'
+    ),
+  },
 ];
