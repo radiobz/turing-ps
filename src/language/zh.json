@@ -235,6 +235,22 @@
     "reset": "重置",
     "apply": "应用"
   },
+  "enhance": {
+    "title": "一键工具",
+    "brighten": "一键提亮",
+    "print": "一键打印",
+    "frame": "相框",
+    "removeBg": "抠图",
+    "effects": "插画特效",
+    "brightenTip": "自动曝光优化：分析亮度直方图，自动提升暗部细节并控制过曝。",
+    "brightenBtn": "一键提亮",
+    "printTip": "导出当前画布并调用浏览器打印，可另存为 PDF。",
+    "printBtn": "打印",
+    "frameTip": "为选中的图片添加边框。",
+    "removeBgTip": "从图片四角取样背景色，按容差移除相似背景（适合纯色背景图）。",
+    "tolerance": "容差",
+    "apply": "应用"
+  },
   "clearTip": "确定要清空吗？",
   "replaceTip": "确定要添加到画布中吗？",
   "ok": "确认",

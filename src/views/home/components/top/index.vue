@@ -26,6 +26,19 @@
       <Button type="text" icon="md-color-palette" @click="openBeauty">
         {{ $t('beauty.title') }}
       </Button>
+      <!-- 一键工具 -->
+      <Dropdown trigger="click" @on-click="openEnhance">
+        <Button type="text" icon="ios-color-wand">{{ $t('enhance.title') }}</Button>
+        <template #list>
+          <DropdownMenu>
+            <DropdownItem name="brighten">{{ $t('enhance.brighten') }}</DropdownItem>
+            <DropdownItem name="print">{{ $t('enhance.print') }}</DropdownItem>
+            <DropdownItem name="frame">{{ $t('enhance.frame') }}</DropdownItem>
+            <DropdownItem name="removeBg">{{ $t('enhance.removeBg') }}</DropdownItem>
+            <DropdownItem name="effects">{{ $t('enhance.effects') }}</DropdownItem>
+          </DropdownMenu>
+        </template>
+      </Dropdown>
       <!-- 管理员模式 -->
       <admin />
       <!-- 预览 -->
@@ -69,6 +82,11 @@ const toggleModel = computed({
 // 打开美颜面板
 const openBeauty = () => {
   window.dispatchEvent(new CustomEvent('beauty-open'));
+};
+
+// 打开一键工具面板
+const openEnhance = (name) => {
+  window.dispatchEvent(new CustomEvent('enhance-open', { detail: name }));
 };
 </script>
 

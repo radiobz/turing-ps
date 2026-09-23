@@ -195,6 +195,22 @@
     "reset": "Reset",
     "apply": "Apply"
   },
+  "enhance": {
+    "title": "Quick Tools",
+    "brighten": "Brighten",
+    "print": "Print",
+    "frame": "Frame",
+    "removeBg": "Remove BG",
+    "effects": "Effects",
+    "brightenTip": "Auto-exposure: analyzes the brightness histogram, lifts shadows and controls overexposure.",
+    "brightenBtn": "Brighten",
+    "printTip": "Export the canvas and use the browser print dialog (can be saved as PDF).",
+    "printBtn": "Print",
+    "frameTip": "Add a border to the selected image.",
+    "removeBgTip": "Samples background color from image corners and removes similar background by tolerance (best for solid-color backgrounds).",
+    "tolerance": "Tolerance",
+    "apply": "Apply"
+  },
   "clearTip": "Are you sure you want to clear it?",
   "replaceTip": "Are you sure you want to add to the canvas?",
   "ok": "ok",

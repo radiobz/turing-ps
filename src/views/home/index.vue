@@ -27,6 +27,8 @@
     </Layout>
     <!-- 美颜面板 -->
     <beautyPanel />
+    <!-- 一键工具面板 -->
+    <enhancePanel />
   </div>
 </template>
 
@@ -35,6 +37,7 @@ import Top from './components/top/index.vue';
 import Left from './components/left/index.vue';
 import Right from './components/right/index.vue';
 import beautyPanel from '@/components/beautyPanel.vue';
+import enhancePanel from '@/components/enhancePanel.vue';
 
 import zoom from '@/components/zoom.vue';
 import dragMode from '@/components/dragMode.vue';

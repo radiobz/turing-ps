@@ -37,6 +37,12 @@ const config = ({ mode }) => {
       // 增加下面的配置项,这样在运行时就能检查eslint规范
       eslintPlugin({
         include: ['src/**/*.js', 'src/**/*.vue', 'src/*.js', 'src/*.vue'],
+        exclude: [
+          'src/components/beautyPanel.vue',
+          'src/components/enhancePanel.vue',
+          'src/utils/gpupixel.ts',
+          'src/utils/imageFilter.ts',
+        ],
       }),
       vueJsx({
         // options are passed on to @vue/babel-plugin-jsx

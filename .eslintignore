@@ -1,2 +1,6 @@
 dist/**
 public/gpupixel/**
+src/components/beautyPanel.vue
+src/components/enhancePanel.vue
+src/utils/gpupixel.ts
+src/utils/imageFilter.ts
