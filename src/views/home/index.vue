@@ -25,6 +25,8 @@
         <Right v-if="state.show"></Right>
       </Content>
     </Layout>
+    <!-- 美颜面板 -->
+    <beautyPanel />
   </div>
 </template>
 
@@ -32,6 +34,7 @@
 import Top from './components/top/index.vue';
 import Left from './components/left/index.vue';
 import Right from './components/right/index.vue';
+import beautyPanel from '@/components/beautyPanel.vue';
 
 import zoom from '@/components/zoom.vue';
 import dragMode from '@/components/dragMode.vue';

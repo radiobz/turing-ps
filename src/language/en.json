@@ -186,6 +186,15 @@
   },
   "setSizeTip": "Resize canvas",
   "tip": "tip",
+  "beauty": {
+    "title": "Beauty",
+    "smoothing": "Smoothing",
+    "whitening": "Whitening",
+    "noImage": "Please select an image on the canvas first",
+    "tip": "Powered by open-source GPUPixel engine (Apache-2.0). Images are processed locally and never uploaded.",
+    "reset": "Reset",
+    "apply": "Apply"
+  },
   "clearTip": "Are you sure you want to clear it?",
   "replaceTip": "Are you sure you want to add to the canvas?",
   "ok": "ok",

@@ -226,6 +226,15 @@
   },
   "setSizeTip": "调整画布尺寸",
   "tip": "提示",
+  "beauty": {
+    "title": "美颜",
+    "smoothing": "磨皮",
+    "whitening": "美白",
+    "noImage": "请先选中画布中的一张图片",
+    "tip": "基于开源 GPUPixel 引擎（Apache-2.0），图片在本地处理，不会上传。",
+    "reset": "重置",
+    "apply": "应用"
+  },
   "clearTip": "确定要清空吗？",
   "replaceTip": "确定要添加到画布中吗？",
   "ok": "确认",

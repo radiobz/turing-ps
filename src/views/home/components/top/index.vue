@@ -22,9 +22,10 @@
     </div>
 
     <div class="right">
-      <a href="https://pro.kuaitu.cc/" target="_blank" alt="商业版">
-        <img width="15" :src="proIcon" alt="vue-fbric-editor" />
-      </a>
+      <!-- 美颜 -->
+      <Button type="text" icon="md-color-palette" @click="openBeauty">
+        {{ $t('beauty.title') }}
+      </Button>
       <!-- 管理员模式 -->
       <admin />
       <!-- 预览 -->
@@ -38,7 +39,6 @@
 </template>
 
 <script name="Top" setup lang="ts">
-import proIcon from '@/assets/icon/proIcon.png';
 // 导入元素
 import importJson from '@/components/importJSON.vue';
 import importFile from '@/components/importFile.vue';
@@ -65,6 +65,11 @@ const toggleModel = computed({
     emit('update:ruler', value);
   },
 });
+
+// 打开美颜面板
+const openBeauty = () => {
+  window.dispatchEvent(new CustomEvent('beauty-open'));
+};
 </script>
 
 <style lang="less" scoped>
