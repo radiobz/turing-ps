@@ -7,7 +7,7 @@
     @on-cancel="close"
   >
     <div class="enhance-panel">
-      <Alert v-if="!selectedImage && tool !== 'print'" type="warning" show-icon>
+      <Alert v-if="!selectedImage" type="warning" show-icon>
         {{ $t('beauty.noImage') }}
       </Alert>
 
@@ -19,6 +19,8 @@
           <TabPane :label="$t('enhance.frame')" name="frame" />
           <TabPane :label="$t('enhance.removeBg')" name="removeBg" />
           <TabPane :label="$t('enhance.effects')" name="effects" />
+          <TabPane :label="$t('enhance.sticker')" name="sticker" />
+          <TabPane :label="$t('enhance.textEffect')" name="textEffect" />
         </Tabs>
 
         <div class="enhance-body">
@@ -120,6 +122,39 @@
               </div>
             </div>
           </div>
+
+          <!-- 装饰贴纸 -->
+          <div v-if="tool === 'sticker'" class="sticker-box">
+            <p class="enhance-desc">{{ $t('enhance.stickerTip') }}</p>
+            <div class="sticker-grid">
+              <div
+                v-for="st in STICKERS"
+                :key="st.key"
+                class="sticker-item"
+                :title="st.name"
+                @click="insertSticker(st)"
+              >
+                <span class="sticker-svg" v-html="st.svg"></span>
+                <span class="sticker-name">{{ st.name }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 文字特效 -->
+          <div v-if="tool === 'textEffect'" class="text-effect-box">
+            <p class="enhance-desc">{{ $t('enhance.textEffectTip') }}</p>
+            <div class="text-effect-list">
+              <Button
+                v-for="fx in TEXT_EFFECTS"
+                :key="fx.key"
+                size="small"
+                class="effect-btn"
+                @click="applyTextEffectFx(fx.key)"
+              >
+                {{ fx.name }}
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -132,7 +167,10 @@
 
 <script setup name="EnhancePanel">
 import { Message } from 'view-ui-plus';
+import { fabric } from 'fabric';
 import useSelect from '@/hooks/select';
+import { STICKERS } from '@/utils/stickers';
+import { TEXT_EFFECTS, applyTextEffect } from '@/utils/textEffects';
 import {
   autoBrighten,
   sketch,
@@ -180,9 +218,16 @@ const effectList = [
   { key: 'invert', label: '反色' },
 ];
 
-/** 打开面板，tool: brighten|print|frame|removeBg|effects */
+/** 打开面板，tool: brighten|print|frame|removeBg|effects|sticker|textEffect */
 function open(t = 'brighten') {
   tool.value = t;
+  // 贴纸与文字特效不依赖选中图片
+  if (t === 'sticker' || t === 'textEffect') {
+    selectedImage.value = true;
+    activeObject = null;
+    visible.value = true;
+    return;
+  }
   const obj = canvasEditor.canvas.getActiveObjects()[0];
   if (!obj || obj.type !== 'image') {
     selectedImage.value = false;
@@ -432,6 +477,40 @@ function getEffectFn(key) {
   }
 }
 
+/** 插入装饰贴纸 */
+function insertSticker(st) {
+  try {
+    fabric.loadSVGFromString(st.svg, (objects, options) => {
+      const group = fabric.util.groupSVGElements(objects, options);
+      group.set({ name: st.name, stickerKey: st.key });
+      group.scaleToWidth(200);
+      canvasEditor.addBaseType(group, { center: true });
+      Message.success('已插入贴纸');
+      visible.value = false;
+    });
+  } catch (e) {
+    Message.error(`贴纸插入失败：${e.message}`);
+  }
+}
+
+/** 应用文字特效 */
+function applyTextEffectFx(key) {
+  const obj = canvasEditor.canvas.getActiveObject();
+  const t = obj && obj.type;
+  if (!obj || (t !== 'text' && t !== 'i-text' && t !== 'textbox')) {
+    Message.warning('请先在画布中选中一段文字');
+    return;
+  }
+  try {
+    applyTextEffect(obj, key);
+    canvasEditor.canvas.renderAll();
+    canvasEditor.saveState();
+    Message.success('文字特效已应用');
+  } catch (e) {
+    Message.error(`文字特效失败：${e.message}`);
+  }
+}
+
 defineExpose({ open, close });
 
 window.addEventListener('enhance-open', (e) => open(e && e.detail));
@@ -559,6 +638,58 @@ window.addEventListener('enhance-open', (e) => open(e && e.detail));
       .frame-label {
         font-size: 12px;
         color: #515a6e;
+      }
+    }
+  }
+
+  .sticker-box {
+    .sticker-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+
+      .sticker-item {
+        width: 84px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        padding: 8px 4px;
+        border: 1px solid #dcdee2;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &:hover {
+          border-color: #2d8cf0;
+          background: #f0faff;
+          transform: translateY(-2px);
+        }
+
+        .sticker-svg {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 56px;
+          height: 56px;
+        }
+
+        .sticker-name {
+          font-size: 12px;
+          color: #515a6e;
+        }
+      }
+    }
+  }
+
+  .text-effect-box {
+    .text-effect-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+
+      .effect-btn {
+        margin: 0;
       }
     }
   }

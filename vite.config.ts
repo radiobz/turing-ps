@@ -42,6 +42,8 @@ const config = ({ mode }) => {
           'src/components/enhancePanel.vue',
           'src/utils/gpupixel.ts',
           'src/utils/imageFilter.ts',
+          'src/utils/stickers.ts',
+          'src/utils/textEffects.ts',
         ],
       }),
       vueJsx({

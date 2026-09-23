@@ -249,7 +249,11 @@
     "frameTip": "为选中的图片添加边框。",
     "removeBgTip": "从图片四角取样背景色，按容差移除相似背景（适合纯色背景图）。",
     "tolerance": "容差",
-    "apply": "应用"
+    "apply": "应用",
+    "sticker": "装饰贴纸",
+    "textEffect": "文字特效",
+    "stickerTip": "点击贴纸即可插入到画布，插入后可拖动、缩放与旋转。",
+    "textEffectTip": "先在画布中选中一段文字，再点击下方样式一键应用。"
   },
   "clearTip": "确定要清空吗？",
   "replaceTip": "确定要添加到画布中吗？",

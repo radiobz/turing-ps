@@ -209,7 +209,11 @@
     "frameTip": "Add a border to the selected image.",
     "removeBgTip": "Samples background color from image corners and removes similar background by tolerance (best for solid-color backgrounds).",
     "tolerance": "Tolerance",
-    "apply": "Apply"
+    "apply": "Apply",
+    "sticker": "Stickers",
+    "textEffect": "Text FX",
+    "stickerTip": "Click a sticker to insert it into the canvas. Drag, scale and rotate after insertion.",
+    "textEffectTip": "Select a text object on the canvas first, then click a style to apply."
   },
   "clearTip": "Are you sure you want to clear it?",
   "replaceTip": "Are you sure you want to add to the canvas?",

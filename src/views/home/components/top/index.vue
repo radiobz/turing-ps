@@ -36,6 +36,8 @@
             <DropdownItem name="frame">{{ $t('enhance.frame') }}</DropdownItem>
             <DropdownItem name="removeBg">{{ $t('enhance.removeBg') }}</DropdownItem>
             <DropdownItem name="effects">{{ $t('enhance.effects') }}</DropdownItem>
+            <DropdownItem name="sticker">{{ $t('enhance.sticker') }}</DropdownItem>
+            <DropdownItem name="textEffect">{{ $t('enhance.textEffect') }}</DropdownItem>
           </DropdownMenu>
         </template>
       </Dropdown>
