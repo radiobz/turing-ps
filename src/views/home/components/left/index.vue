@@ -2,7 +2,6 @@
 // 左侧组件
 import importTmpl from '@/components/importTmpl.vue';
 import fontStyle from '@/components/fontStyle.vue';
-import myMaterial from '@/components/myMaterial/index.vue';
 import tools from '@/components/tools.vue';
 import material from '@/components/material.vue';
 import layer from '@/components/layer.vue';
@@ -24,7 +23,6 @@ const leftBarComponent = {
   material,
   fontStyle,
   layer,
-  myMaterial,
 };
 
 // fix: 修复vue-i18n function "t" not reactive inside ref object
@@ -60,12 +58,6 @@ const leftBar = reactive([
     name: computed(() => t('layers')),
     icon: 'md-reorder',
   },
-  {
-    // 用户素材
-    key: 'myMaterial',
-    name: computed(() => t('mine')),
-    icon: 'ios-contact-outline',
-  },
 ]);
 // 隐藏工具条
 const hideToolsBar = () => {
@@ -78,10 +70,10 @@ const showToolsBar = (val) => {
 };
 
 onMounted(() => {
-  // 有ID时，打开作品面板
+  // 有ID时，打开模板面板
   const route = useRoute();
   if (route?.query?.id) {
-    menuActive.value = 'myMaterial';
+    menuActive.value = 'importTmpl';
   }
 });
 </script>

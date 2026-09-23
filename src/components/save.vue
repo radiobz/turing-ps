@@ -20,8 +20,7 @@
       </Button>
       <template #list>
         <DropdownMenu>
-          <DropdownItem name="saveMyClould">{{ $t('save.save_my_spase') }}</DropdownItem>
-          <DropdownItem name="saveImg" divided>{{ $t('save.save_as_picture') }}</DropdownItem>
+          <DropdownItem name="saveImg">{{ $t('save.save_as_picture') }}</DropdownItem>
           <DropdownItem name="saveSvg">{{ $t('save.save_as_svg') }}</DropdownItem>
           <DropdownItem name="clipboard" divided>{{ $t('save.copy_to_clipboard') }}</DropdownItem>
           <DropdownItem name="clipboardBase64">{{ $t('save.copy_to_clipboardstr') }}</DropdownItem>
@@ -35,15 +34,9 @@
 <script setup name="save-bar">
 import { Modal } from 'view-ui-plus';
 import useSelect from '@/hooks/select';
-import useMaterial from '@/hooks/useMaterial';
 import { debounce } from 'lodash-es';
 import { useI18n } from 'vue-i18n';
-import { Spin } from 'view-ui-plus';
-import { useRoute } from 'vue-router';
 import { Message } from 'view-ui-plus';
-const route = useRoute();
-
-const { createTmplByCommon, updataTemplInfo, routerToId } = useMaterial();
 
 const { t } = useI18n();
 
@@ -73,20 +66,6 @@ const cbMap = {
     } catch (error) {
       Message.error('复制失败');
     }
-  },
-  async saveMyClould() {
-    try {
-      Spin.show();
-      if (route?.query?.id) {
-        await updataTemplInfo(route?.query?.id);
-      } else {
-        const res = await createTmplByCommon();
-        routerToId(res.data.data.id);
-      }
-    } catch (error) {
-      Message.warning('请登录');
-    }
-    Spin.hide();
   },
 };
 

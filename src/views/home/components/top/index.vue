@@ -47,7 +47,6 @@
       <previewCurrent />
       <waterMark />
       <save></save>
-      <login></login>
       <lang></lang>
     </div>
   </Header>
@@ -65,7 +64,6 @@ import previewCurrent from '@/components/previewCurrent';
 import save from '@/components/save.vue';
 import lang from '@/components/lang.vue';
 import waterMark from '@/components/waterMark.vue';
-import login from '@/components/login';
 import admin from '@/components/admin';
 import history from '@/components/history.vue';
 
