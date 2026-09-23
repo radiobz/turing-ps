@@ -46,6 +46,7 @@ const config = ({ mode }) => {
           'src/utils/textEffects.ts',
           'src/utils/faceDetect.ts',
           'src/utils/faceLiquify.ts',
+          'src/utils/lipstick.ts',
         ],
       }),
       vueJsx({

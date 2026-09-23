@@ -65,6 +65,50 @@
             />
             <span class="beauty-value">{{ params.eyeStrength.toFixed(2) }}</span>
           </div>
+          <div class="beauty-item">
+            <span class="beauty-label">{{ $t('beauty.lipstick') }}</span>
+            <Slider
+              v-model="params.lipstickStrength"
+              :min="0"
+              :max="1"
+              :step="0.01"
+              @on-change="onParamChange"
+            />
+            <span class="beauty-value">{{ params.lipstickStrength.toFixed(2) }}</span>
+          </div>
+          <div class="beauty-swatches">
+            <span
+              v-for="c in lipstickColors"
+              :key="c.color"
+              class="swatch"
+              :class="{ active: params.lipstickColor === c.color }"
+              :style="{ background: c.color }"
+              :title="c.name"
+              @click="selectLipstickColor(c.color)"
+            ></span>
+          </div>
+          <div class="beauty-item">
+            <span class="beauty-label">{{ $t('beauty.blush') }}</span>
+            <Slider
+              v-model="params.blushStrength"
+              :min="0"
+              :max="1"
+              :step="0.01"
+              @on-change="onParamChange"
+            />
+            <span class="beauty-value">{{ params.blushStrength.toFixed(2) }}</span>
+          </div>
+          <div class="beauty-swatches">
+            <span
+              v-for="c in blushColors"
+              :key="c.color"
+              class="swatch"
+              :class="{ active: params.blushColor === c.color }"
+              :style="{ background: c.color }"
+              :title="c.name"
+              @click="selectBlushColor(c.color)"
+            ></span>
+          </div>
           <div class="beauty-tip">{{ $t('beauty.tip') }}</div>
           <div class="beauty-tip face-tip">{{ $t('beauty.faceTip') }}</div>
         </div>
@@ -93,6 +137,7 @@ import {
 } from '@/utils/gpupixel';
 import { faceLiquify } from '@/utils/faceLiquify';
 import { detectFace } from '@/utils/faceDetect';
+import { renderMakeup } from '@/utils/lipstick';
 
 const { canvasEditor } = useSelect();
 
@@ -105,7 +150,29 @@ const params = reactive({
   whitening: DEFAULT_BEAUTY_PARAMS.whitening,
   slimStrength: 0,
   eyeStrength: 0,
+  lipstickStrength: 0,
+  lipstickColor: '#e04040',
+  blushStrength: 0,
+  blushColor: '#ff6f91',
 });
+
+// 口红色板
+const lipstickColors = [
+  { color: '#e04040', name: '正红' },
+  { color: '#c04851', name: '豆沙' },
+  { color: '#e86830', name: '橘红' },
+  { color: '#d0487e', name: '玫红' },
+  { color: '#b0806a', name: '裸粉' },
+  { color: '#8e3b5e', name: '酒红' },
+];
+
+// 腮红色板
+const blushColors = [
+  { color: '#ff6f91', name: '樱花粉' },
+  { color: '#ff8a65', name: '蜜桃橘' },
+  { color: '#f48fb1', name: '玫瑰粉' },
+  { color: '#e57373', name: '珊瑚红' },
+];
 
 // 原图（应用时使用，保持原分辨率）
 let srcImageData = null;
@@ -224,12 +291,20 @@ function onParamChange() {
   }, 200);
 }
 
-/** 组合处理链路：瘦脸/大眼 → 磨皮/美白 */
+/** 组合处理链路：瘦脸/大眼 → 口红/腮红 → 磨皮/美白 */
 function applyAll(data) {
   let out = data;
   if ((params.slimStrength > 0 || params.eyeStrength > 0) && faceDetection) {
     const p = scaleFaceParams(faceDetection, out.width, out.height);
     out = faceLiquify(out.data, out.width, out.height, p);
+  }
+  if (
+    faceDetection &&
+    ((params.lipstickStrength > 0 && faceDetection.mouthPoints) ||
+      (params.blushStrength > 0 && faceDetection.cheekPoints))
+  ) {
+    const make = scaleMakeupParams(faceDetection, out.width, out.height);
+    out = renderMakeup(out.data, out.width, out.height, make);
   }
   if (params.smoothing > 0 || params.whitening > 0) {
     out = processImageData(out);
@@ -249,6 +324,25 @@ function scaleFaceParams(detection, w, h) {
     eyePoints: detection.eyePoints.map((p) => ({ x: p.x * sx, y: p.y * sy })),
     eyeRadiusRatio: detection.eyeRadiusRatio || 0.22,
     eyeStrength: params.eyeStrength,
+  };
+}
+
+/** 口红/腮红参数（原图坐标缩放到目标尺寸） */
+function scaleMakeupParams(detection, w, h) {
+  const sx = w / srcImageData.width;
+  const sy = h / srcImageData.height;
+  return {
+    mouthPoints: (detection.mouthPoints || []).map((p) => ({ x: p.x * sx, y: p.y * sy })),
+    innerMouthPoints: (detection.innerMouthPoints || []).map((p) => ({
+      x: p.x * sx,
+      y: p.y * sy,
+    })),
+    lipstickColor: params.lipstickColor,
+    lipstickStrength: params.lipstickStrength,
+    cheekPoints: (detection.cheekPoints || []).map((p) => ({ x: p.x * sx, y: p.y * sy })),
+    blushColor: params.blushColor,
+    blushStrength: params.blushStrength,
+    faceWidth: detection.faceWidth || Math.max(srcImageData.width, srcImageData.height) * 0.8,
   };
 }
 
@@ -284,6 +378,22 @@ function apply() {
     if ((params.slimStrength > 0 || params.eyeStrength > 0) && faceDetection) {
       out = faceLiquify(out.data, out.width, out.height, faceDetection);
     }
+    if (
+      faceDetection &&
+      ((params.lipstickStrength > 0 && faceDetection.mouthPoints) ||
+        (params.blushStrength > 0 && faceDetection.cheekPoints))
+    ) {
+      out = renderMakeup(out.data, out.width, out.height, {
+        mouthPoints: faceDetection.mouthPoints,
+        innerMouthPoints: faceDetection.innerMouthPoints,
+        lipstickColor: params.lipstickColor,
+        lipstickStrength: params.lipstickStrength,
+        cheekPoints: faceDetection.cheekPoints,
+        blushColor: params.blushColor,
+        blushStrength: params.blushStrength,
+        faceWidth: Math.max(out.width, out.height) * 0.8,
+      });
+    }
     if (params.smoothing > 0 || params.whitening > 0) {
       out = processImageData(out);
     }
@@ -311,6 +421,10 @@ function reset() {
   params.whitening = DEFAULT_BEAUTY_PARAMS.whitening;
   params.slimStrength = 0;
   params.eyeStrength = 0;
+  params.lipstickStrength = 0;
+  params.lipstickColor = '#e04040';
+  params.blushStrength = 0;
+  params.blushColor = '#ff6f91';
   setBeautyParams({ ...DEFAULT_BEAUTY_PARAMS });
   if (previewImageData && srcImageData) {
     // 重新取原预览数据
@@ -325,6 +439,18 @@ function reset() {
     previewImageData = pCtx.getImageData(0, 0, pw, ph);
     drawPreview(previewImageData);
   }
+}
+
+/** 选择口红色 */
+function selectLipstickColor(color) {
+  params.lipstickColor = color;
+  onParamChange();
+}
+
+/** 选择腮红色 */
+function selectBlushColor(color) {
+  params.blushColor = color;
+  onParamChange();
 }
 
 defineExpose({ open, close });
@@ -386,6 +512,26 @@ window.addEventListener('beauty-open', () => open());
         text-align: right;
         color: #808695;
         font-size: 12px;
+      }
+    }
+
+    .beauty-swatches {
+      display: flex;
+      gap: 8px;
+      margin: -8px 0 12px 70px;
+
+      .swatch {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        cursor: pointer;
+        border: 2px solid transparent;
+        box-shadow: 0 0 0 1px #dcdee2;
+
+        &.active {
+          border-color: #2d8cf0;
+          box-shadow: 0 0 0 2px #2d8cf0;
+        }
       }
     }
 

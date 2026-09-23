@@ -236,7 +236,9 @@
     "tip": "磨皮/美白基于开源 GPUPixel 引擎（Apache-2.0），图片在本地处理，不会上传。",
     "faceTip": "瘦脸/大眼基于开源 face-api.js（MIT）人脸检测，仅在检测到人脸时生效。",
     "reset": "重置",
-    "apply": "应用"
+    "apply": "应用",
+    "lipstick": "口红",
+    "blush": "腮红"
   },
   "enhance": {
     "title": "一键工具",
@@ -256,7 +258,8 @@
     "sticker": "装饰贴纸",
     "textEffect": "文字特效",
     "stickerTip": "点击贴纸即可插入到画布，插入后可拖动、缩放与旋转。",
-    "textEffectTip": "先在画布中选中一段文字，再点击下方样式一键应用。"
+    "textEffectTip": "先在画布中选中一段文字，再点击下方样式一键应用。",
+    "removeBgPickTip": "魔棒模式：点击预览图上的背景区域，可精准移除指定颜色背景。"
   },
   "clearTip": "确定要清空吗？",
   "replaceTip": "确定要添加到画布中吗？",

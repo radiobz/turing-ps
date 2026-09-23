@@ -266,30 +266,41 @@ export function invert(data, width, height) {
 }
 
 /**
- * 抠图（背景色移除）：从图像四角取样背景色，
- * 从边缘 flood-fill，容差内像素 alpha 置 0。
- * tolerance 0-100。
+ * 抠图（背景色移除）：默认从图像四角取样背景色并从边缘 flood-fill；
+ * 也可传入 seedPoints 指定背景种子点（魔棒模式：点击某处移除相似颜色）。
+ * 容差内像素 alpha 置 0。tolerance 0-100。
  */
-export function removeBackground(data, width, height, tolerance) {
+export function removeBackground(data, width, height, tolerance, seedPoints) {
   tolerance = tolerance === undefined ? 30 : tolerance;
-  // 取样四角平均背景色
-  const corners = [
-    data[0],
-    data[1],
-    data[2],
-    data[(width - 1) * 4],
-    data[(width - 1) * 4 + 1],
-    data[(width - 1) * 4 + 2],
-    data[(height - 1) * width * 4],
-    data[(height - 1) * width * 4 + 1],
-    data[(height - 1) * width * 4 + 2],
-    data[((height - 1) * width + (width - 1)) * 4],
-    data[((height - 1) * width + (width - 1)) * 4 + 1],
-    data[((height - 1) * width + (width - 1)) * 4 + 2],
-  ];
-  const bgR = (corners[0] + corners[3] + corners[6] + corners[9]) / 4;
-  const bgG = (corners[1] + corners[4] + corners[7] + corners[10]) / 4;
-  const bgB = (corners[2] + corners[5] + corners[8] + corners[11]) / 4;
+  // 取样背景色：默认四角平均；指定种子点时取种子点颜色
+  let bgR;
+  let bgG;
+  let bgB;
+  if (seedPoints && seedPoints.length) {
+    const p = seedPoints[0];
+    const idx = (p.y * width + p.x) * 4;
+    bgR = data[idx];
+    bgG = data[idx + 1];
+    bgB = data[idx + 2];
+  } else {
+    const corners = [
+      data[0],
+      data[1],
+      data[2],
+      data[(width - 1) * 4],
+      data[(width - 1) * 4 + 1],
+      data[(width - 1) * 4 + 2],
+      data[(height - 1) * width * 4],
+      data[(height - 1) * width * 4 + 1],
+      data[(height - 1) * width * 4 + 2],
+      data[((height - 1) * width + (width - 1)) * 4],
+      data[((height - 1) * width + (width - 1)) * 4 + 1],
+      data[((height - 1) * width + (width - 1)) * 4 + 2],
+    ];
+    bgR = (corners[0] + corners[3] + corners[6] + corners[9]) / 4;
+    bgG = (corners[1] + corners[4] + corners[7] + corners[10]) / 4;
+    bgB = (corners[2] + corners[5] + corners[8] + corners[11]) / 4;
+  }
 
   const tol = tolerance * 2.55; // 0-100 → 0-255
   const out = new Uint8ClampedArray(data);
@@ -302,14 +313,20 @@ export function removeBackground(data, width, height, tolerance) {
     visited[p] = 1;
     stack.push(p);
   };
-  // 从四边入栈
-  for (let x = 0; x < width; x++) {
-    push(x, 0);
-    push(x, height - 1);
-  }
-  for (let y = 0; y < height; y++) {
-    push(0, y);
-    push(width - 1, y);
+  if (seedPoints && seedPoints.length) {
+    for (const s of seedPoints) {
+      push(s.x, s.y);
+    }
+  } else {
+    // 从四边入栈
+    for (let x = 0; x < width; x++) {
+      push(x, 0);
+      push(x, height - 1);
+    }
+    for (let y = 0; y < height; y++) {
+      push(0, y);
+      push(width - 1, y);
+    }
   }
 
   while (stack.length) {

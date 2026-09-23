@@ -68,7 +68,7 @@
           <!-- 抠图 -->
           <div v-if="tool === 'removeBg'" class="enhance-with-preview">
             <div class="enhance-preview">
-              <canvas ref="previewCanvasRef"></canvas>
+              <canvas ref="previewCanvasRef" @click="onPreviewClick"></canvas>
               <div v-if="loading" class="enhance-loading">
                 <Spin size="large"></Spin>
               </div>
@@ -86,6 +86,7 @@
                 <span class="enhance-value">{{ removeBgTolerance }}</span>
               </div>
               <p class="enhance-desc">{{ $t('enhance.removeBgTip') }}</p>
+              <p class="enhance-desc pick-tip">{{ $t('enhance.removeBgPickTip') }}</p>
               <div class="enhance-actions">
                 <Button type="primary" :loading="loading" @click="applyRemoveBg">
                   {{ $t('enhance.apply') }}
@@ -202,6 +203,8 @@ const effectKey = ref('');
 
 let srcImageData = null;
 let previewImageData = null;
+let originalPreview = null;
+let bgSeed = null;
 let activeObject = null;
 
 // 相框预设
@@ -292,6 +295,8 @@ function loadImage() {
       const pCtx = pCanvas.getContext('2d', { willReadFrequently: true });
       pCtx.drawImage(img, 0, 0, pw, ph);
       previewImageData = pCtx.getImageData(0, 0, pw, ph);
+      originalPreview = pCtx.getImageData(0, 0, pw, ph);
+      bgSeed = null;
       drawPreview(previewImageData);
       loading.value = false;
     };
@@ -402,15 +407,17 @@ function applyFrame() {
   }
 }
 
-/** 抠图预览 */
+/** 抠图预览（支持点击选背景种子点） */
 function previewRemoveBg() {
   if (!previewImageData) return;
   try {
+    const seed = bgSeed ? [bgSeed] : null;
     const out = removeBackground(
       previewImageData.data,
       previewImageData.width,
       previewImageData.height,
-      removeBgTolerance.value
+      removeBgTolerance.value,
+      seed
     );
     previewImageData = out;
     drawPreview(out);
@@ -419,16 +426,52 @@ function previewRemoveBg() {
   }
 }
 
+/** 预览图点击：以点击位置为背景种子点（魔棒） */
+function onPreviewClick(e) {
+  if (tool.value !== 'removeBg') return;
+  const canvas = previewCanvasRef.value;
+  if (!canvas) return;
+  const rect = canvas.getBoundingClientRect();
+  const x = Math.round(((e.clientX - rect.left) / rect.width) * canvas.width);
+  const y = Math.round(((e.clientY - rect.top) / rect.height) * canvas.height);
+  if (x < 0 || y < 0 || x >= canvas.width || y >= canvas.height) return;
+  bgSeed = { x, y };
+  // 从原始预览图重算，避免叠加累积
+  restorePreview();
+  previewRemoveBg();
+}
+
+/** 恢复原始预览图（抠图重算用） */
+function restorePreview() {
+  if (!originalPreview) return;
+  previewImageData = new ImageData(
+    originalPreview.slice(),
+    originalPreview.width,
+    originalPreview.height
+  );
+}
+
 /** 应用抠图 */
 function applyRemoveBg() {
   if (!srcImageData) return;
   loading.value = true;
   try {
+    // 种子点缩放到原图坐标
+    let seed = null;
+    if (bgSeed && originalPreview) {
+      seed = [
+        {
+          x: Math.round((bgSeed.x / originalPreview.width) * srcImageData.width),
+          y: Math.round((bgSeed.y / originalPreview.height) * srcImageData.height),
+        },
+      ];
+    }
     const out = removeBackground(
       srcImageData.data,
       srcImageData.width,
       srcImageData.height,
-      removeBgTolerance.value
+      removeBgTolerance.value,
+      seed
     );
     applyToCanvas(out);
   } catch (e) {
@@ -558,6 +601,11 @@ window.addEventListener('enhance-open', (e) => open(e && e.detail));
     font-size: 13px;
     margin-bottom: 16px;
     text-align: left;
+
+    &.pick-tip {
+      color: #2d8cf0;
+      cursor: default;
+    }
   }
 
   .enhance-with-preview {
