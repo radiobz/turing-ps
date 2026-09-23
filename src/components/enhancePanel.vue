@@ -181,6 +181,12 @@ import {
   invert,
   grayscale,
   removeBackground,
+  gaussianBlur,
+  sharpen,
+  emboss,
+  ink,
+  warm,
+  cool,
 } from '@/utils/imageFilter';
 
 const { canvasEditor } = useSelect();
@@ -216,6 +222,12 @@ const effectList = [
   { key: 'vintage', label: '复古' },
   { key: 'gray', label: '黑白' },
   { key: 'invert', label: '反色' },
+  { key: 'blur', label: '柔焦' },
+  { key: 'sharpen', label: '锐化' },
+  { key: 'emboss', label: '浮雕' },
+  { key: 'ink', label: '水墨' },
+  { key: 'warm', label: '暖调' },
+  { key: 'cool', label: '冷调' },
 ];
 
 /** 打开面板，tool: brighten|print|frame|removeBg|effects|sticker|textEffect */
@@ -472,6 +484,18 @@ function getEffectFn(key) {
       return grayscale;
     case 'invert':
       return invert;
+    case 'blur':
+      return gaussianBlur;
+    case 'sharpen':
+      return sharpen;
+    case 'emboss':
+      return emboss;
+    case 'ink':
+      return ink;
+    case 'warm':
+      return warm;
+    case 'cool':
+      return cool;
     default:
       return grayscale;
   }

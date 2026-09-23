@@ -331,6 +331,174 @@ export function removeBackground(data, width, height, tolerance) {
   return new ImageData(out, width, height);
 }
 
+/** 高斯模糊（3x3 核迭代，radius=pass 数） */
+export function gaussianBlur(data, width, height, radius) {
+  radius = radius || 1;
+  const kernel = [1, 2, 1, 2, 4, 2, 1, 2, 1];
+  let cur = data;
+  for (let pass = 0; pass < radius; pass++) {
+    const out = new Uint8ClampedArray(cur.length);
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        let r = 0;
+        let g = 0;
+        let b = 0;
+        let a = 0;
+        for (let ky = -1; ky <= 1; ky++) {
+          for (let kx = -1; kx <= 1; kx++) {
+            const sx = Math.min(width - 1, Math.max(0, x + kx));
+            const sy = Math.min(height - 1, Math.max(0, y + ky));
+            const idx = (sy * width + sx) * 4;
+            const w = kernel[(ky + 1) * 3 + (kx + 1)];
+            r += cur[idx] * w;
+            g += cur[idx + 1] * w;
+            b += cur[idx + 2] * w;
+            a += cur[idx + 3] * w;
+          }
+        }
+        const idx = (y * width + x) * 4;
+        out[idx] = (r / 16) | 0;
+        out[idx + 1] = (g / 16) | 0;
+        out[idx + 2] = (b / 16) | 0;
+        out[idx + 3] = (a / 16) | 0;
+      }
+    }
+    cur = out;
+  }
+  return new ImageData(cur, width, height);
+}
+
+/** 锐化（拉普拉斯增强） */
+export function sharpen(data, width, height) {
+  const kernel = [0, -1, 0, -1, 5, -1, 0, -1, 0];
+  const out = new Uint8ClampedArray(data.length);
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      let r = 0;
+      let g = 0;
+      let b = 0;
+      for (let ky = -1; ky <= 1; ky++) {
+        for (let kx = -1; kx <= 1; kx++) {
+          const sx = Math.min(width - 1, Math.max(0, x + kx));
+          const sy = Math.min(height - 1, Math.max(0, y + ky));
+          const idx = (sy * width + sx) * 4;
+          const w = kernel[(ky + 1) * 3 + (kx + 1)];
+          r += data[idx] * w;
+          g += data[idx + 1] * w;
+          b += data[idx + 2] * w;
+        }
+      }
+      const idx = (y * width + x) * 4;
+      out[idx] = clamp(r);
+      out[idx + 1] = clamp(g);
+      out[idx + 2] = clamp(b);
+      out[idx + 3] = data[idx + 3];
+    }
+  }
+  return new ImageData(out, width, height);
+}
+
+/** 浮雕 */
+export function emboss(data, width, height) {
+  const out = new Uint8ClampedArray(data.length);
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const idx = (y * width + x) * 4;
+      const nx = Math.min(width - 1, x + 1);
+      const ny = Math.min(height - 1, y + 1);
+      const nIdx = (ny * width + nx) * 4;
+      const r = data[idx] - data[nIdx] + 128;
+      const g = data[idx + 1] - data[nIdx + 1] + 128;
+      const b = data[idx + 2] - data[nIdx + 2] + 128;
+      out[idx] = clamp(r);
+      out[idx + 1] = clamp(g);
+      out[idx + 2] = clamp(b);
+      out[idx + 3] = data[idx + 3];
+    }
+  }
+  return new ImageData(out, width, height);
+}
+
+/** 水墨画：灰度 + 高对比 + 轻模糊 */
+export function ink(data, width, height) {
+  // 灰度
+  const gray = new Uint8ClampedArray(data.length);
+  for (let i = 0; i < width * height; i++) {
+    const idx = i * 4;
+    const v = (data[idx] * 299 + data[idx + 1] * 587 + data[idx + 2] * 114) / 1000;
+    gray[idx] = v;
+    gray[idx + 1] = v;
+    gray[idx + 2] = v;
+    gray[idx + 3] = data[idx + 3];
+  }
+  // 轻度模糊
+  let cur = gray;
+  const kernel = [1, 2, 1, 2, 4, 2, 1, 2, 1];
+  for (let pass = 0; pass < 1; pass++) {
+    const out = new Uint8ClampedArray(cur.length);
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        let v = 0;
+        for (let ky = -1; ky <= 1; ky++) {
+          for (let kx = -1; kx <= 1; kx++) {
+            const sx = Math.min(width - 1, Math.max(0, x + kx));
+            const sy = Math.min(height - 1, Math.max(0, y + ky));
+            v += cur[(sy * width + sx) * 4] * kernel[(ky + 1) * 3 + (kx + 1)];
+          }
+        }
+        const idx = (y * width + x) * 4;
+        const nv = (v / 16) | 0;
+        out[idx] = nv;
+        out[idx + 1] = nv;
+        out[idx + 2] = nv;
+        out[idx + 3] = cur[idx + 3];
+      }
+    }
+    cur = out;
+  }
+  // 对比度拉伸（水墨层次）
+  let lo = 255;
+  let hi = 0;
+  for (let i = 0; i < width * height; i++) {
+    const v = cur[i * 4];
+    if (v < lo) lo = v;
+    if (v > hi) hi = v;
+  }
+  const range = hi - lo > 8 ? hi - lo : 255;
+  for (let i = 0; i < width * height; i++) {
+    const idx = i * 4;
+    const v = clamp(((cur[idx] - lo) * 255) / range);
+    cur[idx] = v;
+    cur[idx + 1] = v;
+    cur[idx + 2] = v;
+  }
+  return new ImageData(cur, width, height);
+}
+
+/** 暖色调 */
+export function warm(data, width, height) {
+  const out = new Uint8ClampedArray(data.length);
+  for (let i = 0; i < width * height * 4; i += 4) {
+    out[i] = clamp(data[i] * 1.12);
+    out[i + 1] = clamp(data[i + 1] * 1.02);
+    out[i + 2] = clamp(data[i + 2] * 0.88);
+    out[i + 3] = data[i + 3];
+  }
+  return new ImageData(out, width, height);
+}
+
+/** 冷色调 */
+export function cool(data, width, height) {
+  const out = new Uint8ClampedArray(data.length);
+  for (let i = 0; i < width * height * 4; i += 4) {
+    out[i] = clamp(data[i] * 0.88);
+    out[i + 1] = clamp(data[i + 1] * 1.0);
+    out[i + 2] = clamp(data[i + 2] * 1.12);
+    out[i + 3] = data[i + 3];
+  }
+  return new ImageData(out, width, height);
+}
+
 function clamp(v) {
   return v < 0 ? 0 : v > 255 ? 255 : v | 0;
 }
