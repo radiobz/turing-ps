@@ -43,7 +43,30 @@
             />
             <span class="beauty-value">{{ params.whitening.toFixed(1) }}</span>
           </div>
+          <div class="beauty-item">
+            <span class="beauty-label">{{ $t('beauty.slim') }}</span>
+            <Slider
+              v-model="params.slimStrength"
+              :min="0"
+              :max="1"
+              :step="0.01"
+              @on-change="onParamChange"
+            />
+            <span class="beauty-value">{{ params.slimStrength.toFixed(2) }}</span>
+          </div>
+          <div class="beauty-item">
+            <span class="beauty-label">{{ $t('beauty.eyeEnlarge') }}</span>
+            <Slider
+              v-model="params.eyeStrength"
+              :min="0"
+              :max="1"
+              :step="0.01"
+              @on-change="onParamChange"
+            />
+            <span class="beauty-value">{{ params.eyeStrength.toFixed(2) }}</span>
+          </div>
           <div class="beauty-tip">{{ $t('beauty.tip') }}</div>
+          <div class="beauty-tip face-tip">{{ $t('beauty.faceTip') }}</div>
         </div>
       </div>
     </div>
@@ -68,6 +91,8 @@ import {
   processImageData,
   DEFAULT_BEAUTY_PARAMS,
 } from '@/utils/gpupixel';
+import { faceLiquify } from '@/utils/faceLiquify';
+import { detectFace } from '@/utils/faceDetect';
 
 const { canvasEditor } = useSelect();
 
@@ -78,12 +103,16 @@ const previewCanvasRef = ref();
 const params = reactive({
   smoothing: DEFAULT_BEAUTY_PARAMS.smoothing,
   whitening: DEFAULT_BEAUTY_PARAMS.whitening,
+  slimStrength: 0,
+  eyeStrength: 0,
 });
 
 // 原图（应用时使用，保持原分辨率）
 let srcImageData = null;
 // 预览图（缩小尺寸，实时预览更快）
 let previewImageData = null;
+// 人脸检测结果（原图坐标，null = 未检测到人脸）
+let faceDetection = null;
 let activeObject = null;
 let debounceTimer = null;
 
@@ -150,6 +179,8 @@ function loadImage() {
         .catch(() => {
           loading.value = false;
         });
+      // 后台进行人脸检测（供瘦脸/大眼使用）
+      detectFaceOnSrc();
     };
     img.onerror = () => {
       Message.error('图片读取失败');
@@ -184,7 +215,7 @@ function onParamChange() {
   if (debounceTimer) clearTimeout(debounceTimer);
   debounceTimer = setTimeout(() => {
     try {
-      const out = processImageData(previewImageData);
+      const out = applyAll(previewImageData);
       previewImageData = out;
       drawPreview(out);
     } catch (e) {
@@ -193,13 +224,69 @@ function onParamChange() {
   }, 200);
 }
 
+/** 组合处理链路：瘦脸/大眼 → 磨皮/美白 */
+function applyAll(data) {
+  let out = data;
+  if ((params.slimStrength > 0 || params.eyeStrength > 0) && faceDetection) {
+    const p = scaleFaceParams(faceDetection, out.width, out.height);
+    out = faceLiquify(out.data, out.width, out.height, p);
+  }
+  if (params.smoothing > 0 || params.whitening > 0) {
+    out = processImageData(out);
+  }
+  return out;
+}
+
+/** 将原图坐标的人脸参数缩放到目标尺寸 */
+function scaleFaceParams(detection, w, h) {
+  const sx = w / srcImageData.width;
+  const sy = h / srcImageData.height;
+  return {
+    faceCenter: { x: detection.faceCenter.x * sx, y: detection.faceCenter.y * sy },
+    slimPoints: detection.slimPoints.map((p) => ({ x: p.x * sx, y: p.y * sy })),
+    slimRadiusRatio: detection.slimRadiusRatio || 0.5,
+    slimStrength: params.slimStrength,
+    eyePoints: detection.eyePoints.map((p) => ({ x: p.x * sx, y: p.y * sy })),
+    eyeRadiusRatio: detection.eyeRadiusRatio || 0.22,
+    eyeStrength: params.eyeStrength,
+  };
+}
+
+/** 在原图上进行人脸检测（异步，检测结果存 faceDetection） */
+async function detectFaceOnSrc() {
+  try {
+    if (!srcImageData) return;
+    faceDetection = null;
+    const canvas = document.createElement('canvas');
+    canvas.width = srcImageData.width;
+    canvas.height = srcImageData.height;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    ctx.putImageData(srcImageData, 0, 0);
+    const det = await detectFace(canvas);
+    if (det) {
+      // 追加默认半径比例
+      det.slimRadiusRatio = det.slimRadiusRatio || 0.5;
+      det.eyeRadiusRatio = det.eyeRadiusRatio || 0.22;
+      faceDetection = det;
+    }
+  } catch (e) {
+    faceDetection = null;
+  }
+}
+
 /** 应用：全分辨率处理并替换画布对象 */
 function apply() {
   if (!activeObject || !srcImageData) return;
   loading.value = true;
   try {
     setBeautyParams(params);
-    const out = processImageData(srcImageData);
+    let out = srcImageData;
+    if ((params.slimStrength > 0 || params.eyeStrength > 0) && faceDetection) {
+      out = faceLiquify(out.data, out.width, out.height, faceDetection);
+    }
+    if (params.smoothing > 0 || params.whitening > 0) {
+      out = processImageData(out);
+    }
     const canvas = document.createElement('canvas');
     canvas.width = out.width;
     canvas.height = out.height;
@@ -222,6 +309,8 @@ function apply() {
 function reset() {
   params.smoothing = DEFAULT_BEAUTY_PARAMS.smoothing;
   params.whitening = DEFAULT_BEAUTY_PARAMS.whitening;
+  params.slimStrength = 0;
+  params.eyeStrength = 0;
   setBeautyParams({ ...DEFAULT_BEAUTY_PARAMS });
   if (previewImageData && srcImageData) {
     // 重新取原预览数据
@@ -305,6 +394,14 @@ window.addEventListener('beauty-open', () => open());
       font-size: 12px;
       line-height: 1.6;
       margin-top: 8px;
+
+      &.face-tip {
+        color: #9a8b3d;
+        background: #fef9e7;
+        border: 1px solid #f5e6b8;
+        border-radius: 4px;
+        padding: 6px 8px;
+      }
     }
   }
 }

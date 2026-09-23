@@ -44,6 +44,8 @@ const config = ({ mode }) => {
           'src/utils/imageFilter.ts',
           'src/utils/stickers.ts',
           'src/utils/textEffects.ts',
+          'src/utils/faceDetect.ts',
+          'src/utils/faceLiquify.ts',
         ],
       }),
       vueJsx({

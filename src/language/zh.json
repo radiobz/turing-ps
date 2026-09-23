@@ -230,8 +230,11 @@
     "title": "美颜",
     "smoothing": "磨皮",
     "whitening": "美白",
+    "slim": "瘦脸",
+    "eyeEnlarge": "大眼",
     "noImage": "请先选中画布中的一张图片",
-    "tip": "基于开源 GPUPixel 引擎（Apache-2.0），图片在本地处理，不会上传。",
+    "tip": "磨皮/美白基于开源 GPUPixel 引擎（Apache-2.0），图片在本地处理，不会上传。",
+    "faceTip": "瘦脸/大眼基于开源 face-api.js（MIT）人脸检测，仅在检测到人脸时生效。",
     "reset": "重置",
     "apply": "应用"
   },

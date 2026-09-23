@@ -193,7 +193,10 @@
     "noImage": "Please select an image on the canvas first",
     "tip": "Powered by open-source GPUPixel engine (Apache-2.0). Images are processed locally and never uploaded.",
     "reset": "Reset",
-    "apply": "Apply"
+    "apply": "Apply",
+    "slim": "Slim Face",
+    "eyeEnlarge": "Big Eyes",
+    "faceTip": "Slim/Big-Eyes use open-source face-api.js (MIT) face detection; effective only when a face is detected."
   },
   "enhance": {
     "title": "Quick Tools",
