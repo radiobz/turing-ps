@@ -1,0 +1,10 @@
+packages:
+  - 'packages/*'
+allowBuilds:
+  canvas: true
+  esbuild: true
+  vue-demi: true
+onlyBuiltDependencies:
+  - canvas
+  - esbuild
+  - vue-demi
