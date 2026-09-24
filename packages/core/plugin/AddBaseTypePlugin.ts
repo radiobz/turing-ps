@@ -86,18 +86,23 @@ export default class AddBaseTypePlugin implements IPluginTempl {
           resolve(item);
         });
       } else {
-        fabric.Image.fromURL(
-          target.src,
-          (imgEl) => {
-            resolve(imgEl);
-          },
-          { crossOrigin: 'anonymous' }
-        );
+        // 直接使用已加载完成的图片元素构造实例，避免二次加载。
+        // 不再走 fabric.Image.fromURL + crossOrigin：
+        // dataURL 场景下部分移动端浏览器对 dataURL+crossOrigin 组合加载失败，
+        // 导致 Promise 永不 resolve、图片无法插入。
+        const instance = new fabric.Image(target);
+        resolve(instance);
       }
     });
   }
 
   getImageExtension(imageUrl: string) {
+    // dataURL：从 mime 提取扩展名（data:image/png;base64,xxx → png）
+    if (/^data:/.test(imageUrl)) {
+      const mime = imageUrl.substring(5, imageUrl.indexOf(';'));
+      const ext = (mime.split('/')[1] || '').toLowerCase();
+      return ext.replace('svg+xml', 'svg').replace('jpeg', 'jpg');
+    }
     const pathParts = imageUrl.split('/');
     const filename = pathParts[pathParts.length - 1];
     const fileParts = filename.split('.');

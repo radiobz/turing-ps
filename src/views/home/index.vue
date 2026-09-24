@@ -178,6 +178,18 @@ provide('canvasEditor', canvasEditor);
   justify-content: space-between;
 }
 
+// 窄屏（手机/小窗口）下顶部工具栏允许横向滚动，避免按钮文字被挤压裁剪
+@media (max-width: 768px) {
+  :deep(.ivu-layout-header) {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    justify-content: flex-start;
+    > div {
+      flex-shrink: 0;
+    }
+  }
+}
+
 .home,
 .ivu-layout {
   height: 100vh;
