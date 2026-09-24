@@ -101,16 +101,21 @@ const insertTypeHand = (type) => {
 function insertImgFile(file) {
   if (!file) throw new Error('file is undefined');
   const imgEl = document.createElement('img');
+  // 先注册 onload 再赋值 src，避免加载完成后丢失回调
+  imgEl.onload = async () => {
+    try {
+      const imgItem = await canvasEditor.createImgByElement(imgEl);
+      canvasEditor.addBaseType(imgItem, {
+        scale: true,
+      });
+    } catch (error) {
+      console.error('插入图片失败:', error);
+    }
+    imgEl.remove();
+  };
   imgEl.src = file;
   // 插入页面
   document.body.appendChild(imgEl);
-  imgEl.onload = async () => {
-    const imgItem = await canvasEditor.createImgByElement(imgEl);
-    canvasEditor.addBaseType(imgItem, {
-      scale: true,
-    });
-    imgEl.remove();
-  };
 }
 
 // 插入文件元素

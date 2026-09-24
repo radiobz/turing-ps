@@ -6,7 +6,7 @@
  * @Description: 工具文件
  */
 import { v4 as uuid } from 'uuid';
-import { useClipboard, useFileDialog, useBase64 } from '@vueuse/core';
+import { useClipboard, useBase64 } from '@vueuse/core';
 
 /**
  * @description: 图片文件转字符串
@@ -18,7 +18,7 @@ export function getImgStr(file: File | Blob): Promise<FileReader['result']> {
 }
 
 /**
- * @description: 选择文件
+ * @description: 选择文件（修复：input 必须挂载到 DOM 后 click 才会弹出文件对话框）
  * @param {Object} options accept = '', capture = '', multiple = false
  * @return {Promise}
  */
@@ -28,11 +28,21 @@ export function selectFiles(options: {
   multiple?: boolean;
 }): Promise<FileList | null> {
   return new Promise((resolve) => {
-    const { onChange, open } = useFileDialog(options);
-    onChange((files) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.style.display = 'none';
+    input.multiple = !!options.multiple;
+    if (options.accept) input.accept = options.accept;
+    if (options.capture) input.capture = options.capture;
+    input.onchange = () => {
+      const files = input.files;
+      // 重置 value 允许下次选择同一文件
+      input.value = '';
+      input.remove();
       resolve(files);
-    });
-    open();
+    };
+    document.body.appendChild(input);
+    input.click();
   });
 }
 
@@ -44,12 +54,13 @@ export function selectFiles(options: {
 export function insertImgFile(str: string) {
   return new Promise((resolve) => {
     const imgEl = document.createElement('img');
-    imgEl.src = str;
-    // 插入页面
-    document.body.appendChild(imgEl);
+    // 先注册 onload 再赋值 src，避免加载完成后丢失回调
     imgEl.onload = () => {
       resolve(imgEl);
     };
+    imgEl.src = str;
+    // 插入页面
+    document.body.appendChild(imgEl);
   });
 }
 
