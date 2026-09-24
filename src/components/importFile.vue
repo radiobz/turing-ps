@@ -57,6 +57,7 @@ const HANDLEMAP = {
   // 插入图片
   insertImg: function () {
     selectFiles({ accept: 'image/*', multiple: true }).then((fileList) => {
+      if (!fileList) return; // 用户取消选择
       Array.from(fileList).forEach((item) => {
         getImgStr(item).then((file) => {
           insertImgFile(file);
@@ -67,6 +68,7 @@ const HANDLEMAP = {
   // 插入Svg
   insertSvg: function () {
     selectFiles({ accept: '.svg', multiple: true }).then((fileList) => {
+      if (!fileList) return; // 用户取消选择
       Array.from(fileList).forEach((item) => {
         getImgStr(item).then((file) => {
           insertSvgFile(file);
